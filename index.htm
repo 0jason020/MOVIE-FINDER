@@ -1,0 +1,1751 @@
+<!doctype html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stream Finder</title>
+  <script src="/_sdk/element_sdk.js"></script>
+  <style>
+    body {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      height: 100%;
+      width: 100%;
+      overflow-x: hidden;
+    }
+
+    html {
+      height: 100%;
+      width: 100%;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    .app-container {
+      min-height: 100%;
+      width: 100%;
+      position: relative;
+    }
+
+    .gradient-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 60%;
+      z-index: 0;
+      background-size: 200% 200%;
+      animation: gradient 15s ease infinite;
+    }
+
+    /* Navigation */
+    .navbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      padding: 20px 24px;
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .nav-content {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .nav-logo {
+      font-size: 24px;
+      font-weight: 900;
+      cursor: pointer;
+      transition: transform 0.3s ease;
+    }
+
+    .nav-logo:hover {
+      transform: scale(1.05);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 32px;
+      align-items: center;
+    }
+
+    .nav-link {
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      padding: 8px 16px;
+      border-radius: 12px;
+      text-decoration: none;
+    }
+
+    .nav-link:hover {
+      transform: translateY(-2px);
+    }
+
+    .nav-link.active {
+      font-weight: 800;
+    }
+
+    /* Pages */
+    .page {
+      display: none;
+      min-height: 100%;
+      padding-top: 80px;
+      position: relative;
+      z-index: 1;
+      animation: fadeIn 0.5s ease;
+    }
+
+    .page.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Home Page */
+    .hero-section {
+      padding: 80px 24px 60px;
+      text-align: center;
+    }
+
+    .hero-badge {
+      display: inline-block;
+      padding: 8px 20px;
+      border-radius: 50px;
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 24px;
+      backdrop-filter: blur(10px);
+    }
+
+    .hero-title {
+      font-size: 56px;
+      font-weight: 900;
+      margin-bottom: 20px;
+      line-height: 1.1;
+      background: linear-gradient(135deg, #ffffff 0%, #e0e7ff 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-subtitle {
+      font-size: 22px;
+      margin-bottom: 40px;
+      opacity: 0.95;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+      font-weight: 400;
+    }
+
+    .page-nav-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    .page-nav-card {
+      padding: 40px;
+      border-radius: 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.4s ease;
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .page-nav-card:hover {
+      transform: translateY(-12px) scale(1.02);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    .page-nav-icon {
+      font-size: 64px;
+      margin-bottom: 20px;
+    }
+
+    .page-nav-title {
+      font-size: 24px;
+      font-weight: 800;
+      margin-bottom: 12px;
+    }
+
+    .page-nav-desc {
+      font-size: 16px;
+      opacity: 0.8;
+    }
+
+    /* Stats Section */
+    .stats-section {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 24px;
+      margin: 60px auto;
+      padding: 0 24px;
+      max-width: 1200px;
+    }
+
+    .stat-card {
+      text-align: center;
+      padding: 32px;
+      border-radius: 20px;
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .stat-number {
+      font-size: 48px;
+      font-weight: 900;
+      margin-bottom: 8px;
+    }
+
+    .stat-label {
+      font-size: 16px;
+      opacity: 0.8;
+      font-weight: 600;
+    }
+
+    /* Content Wrapper */
+    .content-wrapper {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 40px 24px 80px;
+    }
+
+    .section-header {
+      font-size: 32px;
+      font-weight: 800;
+      margin-bottom: 32px;
+      text-align: center;
+      position: relative;
+    }
+
+    .section-header::after {
+      content: '';
+      display: block;
+      width: 80px;
+      height: 4px;
+      border-radius: 2px;
+      margin: 16px auto 0;
+    }
+
+    /* Services Grid */
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 28px;
+      margin-bottom: 40px;
+    }
+
+    .service-card {
+      border-radius: 24px;
+      padding: 36px;
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      cursor: pointer;
+      text-decoration: none;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .service-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 100%);
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+
+    .service-card:hover::before {
+      opacity: 1;
+    }
+
+    .service-card:hover {
+      transform: translateY(-12px) scale(1.02);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    .service-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .service-logo {
+      font-size: 56px;
+      line-height: 1;
+      filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+    }
+
+    .service-badge {
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .service-content {
+      position: relative;
+      z-index: 1;
+    }
+
+    .service-name {
+      font-size: 28px;
+      font-weight: 800;
+      margin-bottom: 12px;
+    }
+
+    .service-description {
+      font-size: 16px;
+      line-height: 1.6;
+      opacity: 0.9;
+      margin-bottom: 24px;
+    }
+
+    .service-features {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .feature-tag {
+      padding: 6px 12px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 600;
+      backdrop-filter: blur(10px);
+    }
+
+    /* Comparison Table */
+    .comparison-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0 16px;
+      margin-top: 40px;
+    }
+
+    .comparison-table thead th {
+      padding: 20px;
+      text-align: left;
+      font-size: 18px;
+      font-weight: 800;
+      border-bottom: 2px solid;
+    }
+
+    .comparison-table tbody tr {
+      backdrop-filter: blur(20px);
+      border-radius: 16px;
+      transition: transform 0.3s ease;
+    }
+
+    .comparison-table tbody tr:hover {
+      transform: translateX(8px);
+    }
+
+    .comparison-table td {
+      padding: 24px 20px;
+      font-size: 16px;
+    }
+
+    .comparison-table td:first-child {
+      border-radius: 16px 0 0 16px;
+    }
+
+    .comparison-table td:last-child {
+      border-radius: 0 16px 16px 0;
+    }
+
+    .comparison-icon {
+      font-size: 20px;
+    }
+
+    /* About Page */
+    .about-content {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 40px 24px;
+    }
+
+    .about-card {
+      backdrop-filter: blur(20px);
+      border-radius: 24px;
+      padding: 48px;
+      margin-bottom: 32px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .about-title {
+      font-size: 36px;
+      font-weight: 900;
+      margin-bottom: 24px;
+    }
+
+    .about-text {
+      font-size: 18px;
+      line-height: 1.8;
+      opacity: 0.9;
+      margin-bottom: 24px;
+    }
+
+    .about-features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 24px;
+      margin-top: 40px;
+    }
+
+    .about-feature {
+      text-align: center;
+      padding: 24px;
+      border-radius: 16px;
+      backdrop-filter: blur(10px);
+    }
+
+    .about-feature-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+
+    .about-feature-text {
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    /* Footer */
+    .footer-section {
+      text-align: center;
+      padding: 60px 24px;
+      margin-top: 80px;
+    }
+
+    .footer-text {
+      font-size: 18px;
+      margin-bottom: 32px;
+      opacity: 0.85;
+      font-weight: 500;
+    }
+
+    .social-links {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      font-size: 32px;
+    }
+
+    .social-link {
+      transition: transform 0.3s ease;
+      cursor: pointer;
+    }
+
+    .social-link:hover {
+      transform: scale(1.2) rotate(5deg);
+    }
+
+    /* Mobile Menu */
+    .mobile-menu-btn {
+      display: none;
+      font-size: 28px;
+      cursor: pointer;
+      padding: 8px;
+    }
+
+    @media (max-width: 768px) {
+      .nav-links {
+        display: none;
+        position: fixed;
+        top: 80px;
+        left: 0;
+        right: 0;
+        flex-direction: column;
+        padding: 24px;
+        backdrop-filter: blur(20px);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .nav-links.active {
+        display: flex;
+      }
+
+      .mobile-menu-btn {
+        display: block;
+      }
+
+      .hero-title {
+        font-size: 40px;
+      }
+
+      .hero-subtitle {
+        font-size: 18px;
+      }
+
+      .services-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .section-header {
+        font-size: 28px;
+      }
+
+      .page-nav-cards {
+        grid-template-columns: 1fr;
+      }
+
+      .about-card {
+        padding: 32px 24px;
+      }
+
+      .comparison-table {
+        font-size: 14px;
+      }
+
+      .comparison-table td,
+      .comparison-table th {
+        padding: 16px 12px;
+      }
+    }
+
+    @keyframes gradient {
+      0% {
+        background-position: 0% 50%;
+      }
+      50% {
+        background-position: 100% 50%;
+      }
+      100% {
+        background-position: 0% 50%;
+      }
+    }
+
+    @keyframes float {
+      0%, 100% {
+        transform: translateY(0px);
+      }
+      50% {
+        transform: translateY(-20px);
+      }
+    }
+
+    .floating {
+      animation: float 6s ease-in-out infinite;
+    }
+
+    @keyframes slideInLeft {
+      from {
+        opacity: 0;
+        transform: translateX(-50px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    @keyframes slideInRight {
+      from {
+        opacity: 0;
+        transform: translateX(50px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    @keyframes zoomIn {
+      from {
+        opacity: 0;
+        transform: scale(0.5);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    @keyframes rotateIn {
+      from {
+        opacity: 0;
+        transform: rotate(-180deg) scale(0);
+      }
+      to {
+        opacity: 1;
+        transform: rotate(0) scale(1);
+      }
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.05);
+      }
+    }
+
+    .animate-slide-left {
+      animation: slideInLeft 0.6s ease-out;
+    }
+
+    .animate-slide-right {
+      animation: slideInRight 0.6s ease-out;
+    }
+
+    .animate-zoom {
+      animation: zoomIn 0.5s ease-out;
+    }
+
+    .animate-rotate {
+      animation: rotateIn 0.7s ease-out;
+    }
+
+    .surprise-element {
+      position: fixed;
+      pointer-events: none;
+      z-index: 9999;
+      font-size: 48px;
+      animation: floatAway 3s ease-out forwards;
+    }
+
+    @keyframes floatAway {
+      0% {
+        opacity: 1;
+        transform: translateY(0) scale(1) rotate(0deg);
+      }
+      100% {
+        opacity: 0;
+        transform: translateY(-200px) scale(0.5) rotate(360deg);
+      }
+    }
+
+    .confetti {
+      position: fixed;
+      width: 10px;
+      height: 10px;
+      pointer-events: none;
+      z-index: 9999;
+      animation: confettiFall 3s ease-out forwards;
+    }
+
+    @keyframes confettiFall {
+      0% {
+        opacity: 1;
+        transform: translateY(0) rotate(0deg);
+      }
+      100% {
+        opacity: 0;
+        transform: translateY(100%) rotate(720deg);
+      }
+    }
+
+    /* Easter egg shake */
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
+      20%, 40%, 60%, 80% { transform: translateX(10px); }
+    }
+
+    .shake {
+      animation: shake 0.5s ease;
+    }
+
+    /* Spotlight effect */
+    .spotlight {
+      position: fixed;
+      width: 300px;
+      height: 300px;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 50;
+      background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%);
+      mix-blend-mode: overlay;
+      transition: all 0.1s ease;
+    }
+
+    /* Filter buttons */
+    .filter-btn {
+      padding: 12px 24px;
+      border-radius: 50px;
+      border: 2px solid;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+    }
+
+    .filter-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .filter-btn.active {
+      transform: scale(1.05);
+    }
+
+    /* Quiz options */
+    .quiz-option {
+      padding: 24px;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: 2px solid transparent;
+      backdrop-filter: blur(10px);
+      font-size: 18px;
+      font-weight: 600;
+      text-align: center;
+    }
+
+    .quiz-option:hover {
+      transform: translateX(8px);
+      border-color: currentColor;
+    }
+  </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+  <script src="https://cdn.tailwindcss.com" type="text/javascript"></script>
+ </head>
+ <body>
+  <div class="app-container">
+   <div class="gradient-bg"></div><!-- Navigation -->
+   <nav class="navbar">
+    <div class="nav-content">
+     <div class="nav-logo" id="logo">
+      🎬 StreamFinder
+     </div>
+     <div class="mobile-menu-btn" id="mobile-menu-btn">
+      ☰
+     </div>
+     <div class="nav-links" id="nav-links"><span class="nav-link active" data-page="home" id="nav-home">Home</span> <span class="nav-link" data-page="premium" id="nav-premium">Premium</span> <span class="nav-link" data-page="free" id="nav-free">Free</span> <span class="nav-link" data-page="compare" id="nav-compare">Compare</span> <span class="nav-link" data-page="quiz" id="nav-quiz">Quiz</span> <span class="nav-link" data-page="discover" id="nav-discover">Discover</span> <span class="nav-link" data-page="about" id="nav-about">About</span>
+     </div>
+    </div>
+   </nav><!-- Home Page -->
+   <div class="page active" id="page-home">
+    <header class="hero-section">
+     <div class="hero-badge">
+      🎬 Streaming Made Easy
+     </div>
+     <h1 class="hero-title floating" id="main-title">Find Your Perfect Stream</h1>
+     <p class="hero-subtitle" id="subtitle">Discover the best legal streaming platforms for movies, shows, and more</p>
+    </header>
+    <div class="stats-section">
+     <div class="stat-card">
+      <div class="stat-number">
+       13
+      </div>
+      <div class="stat-label">
+       Streaming Services
+      </div>
+     </div>
+     <div class="stat-card">
+      <div class="stat-number">
+       100K+
+      </div>
+      <div class="stat-label">
+       Movies &amp; Shows
+      </div>
+     </div>
+     <div class="stat-card">
+      <div class="stat-number">
+       100%
+      </div>
+      <div class="stat-label">
+       Legal &amp; Licensed
+      </div>
+     </div>
+    </div>
+    <div class="content-wrapper">
+     <div class="page-nav-cards">
+      <div class="page-nav-card" data-navigate="premium">
+       <div class="page-nav-icon">
+        👑
+       </div>
+       <h3 class="page-nav-title">Premium Services</h3>
+       <p class="page-nav-desc">Explore subscription-based platforms</p>
+      </div>
+      <div class="page-nav-card" data-navigate="free">
+       <div class="page-nav-icon">
+        🆓
+       </div>
+       <h3 class="page-nav-title">Free Services</h3>
+       <p class="page-nav-desc">Discover ad-supported options</p>
+      </div>
+      <div class="page-nav-card" data-navigate="compare">
+       <div class="page-nav-icon">
+        ⚖️
+       </div>
+       <h3 class="page-nav-title">Compare</h3>
+       <p class="page-nav-desc">Side-by-side comparison</p>
+      </div>
+      <div class="page-nav-card" data-navigate="about">
+       <div class="page-nav-icon">
+        ℹ️
+       </div>
+       <h3 class="page-nav-title">About</h3>
+       <p class="page-nav-desc">Learn more about us</p>
+      </div>
+     </div>
+    </div>
+   </div><!-- Premium Page -->
+   <div class="page" id="page-premium">
+    <div class="content-wrapper">
+     <h2 class="section-header" id="premium-label">Premium Streaming Services</h2>
+     <div class="services-grid" id="premium-grid"></div>
+    </div>
+   </div><!-- Free Page -->
+   <div class="page" id="page-free">
+    <div class="content-wrapper">
+     <h2 class="section-header" id="free-label">Free Streaming Services</h2>
+     <div class="services-grid" id="free-grid"></div>
+    </div>
+   </div><!-- Compare Page -->
+   <div class="page" id="page-compare">
+    <div class="content-wrapper">
+     <h2 class="section-header">Service Comparison</h2>
+     <div style="overflow-x: auto;">
+      <table class="comparison-table" id="comparison-table">
+       <thead>
+        <tr>
+         <th>Service</th>
+         <th>Price</th>
+         <th>4K/HD</th>
+         <th>Offline</th>
+         <th>Ads</th>
+         <th>Originals</th>
+        </tr>
+       </thead>
+       <tbody id="comparison-tbody"></tbody>
+      </table>
+     </div>
+    </div>
+   </div><!-- Quiz Page -->
+   <div class="page" id="page-quiz">
+    <div class="content-wrapper">
+     <h2 class="section-header">🎯 Find Your Perfect Match</h2>
+     <div style="max-width: 800px; margin: 0 auto;">
+      <div id="quiz-container">
+       <div class="about-card" id="quiz-question-card">
+        <h3 class="about-title" style="font-size: 28px; margin-bottom: 32px;" id="quiz-question">What's your streaming budget?</h3>
+        <div id="quiz-options" style="display: grid; gap: 16px;"></div>
+       </div>
+       <div class="about-card" id="quiz-result" style="display: none;">
+        <h3 class="about-title" style="font-size: 32px;">🎉 We Recommend</h3>
+        <div id="quiz-recommendation"></div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </div><!-- Discover Page -->
+   <div class="page" id="page-discover">
+    <div class="content-wrapper">
+     <h2 class="section-header">🔍 Interactive Discovery</h2>
+     <div style="max-width: 1200px; margin: 0 auto;">
+      <div class="about-card" style="margin-bottom: 32px;">
+       <h3 class="about-title" style="font-size: 24px; margin-bottom: 24px;">Filter by Features</h3>
+       <div style="display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 32px;"><button class="filter-btn active" data-filter="all">All Services</button> <button class="filter-btn" data-filter="4k">4K Quality</button> <button class="filter-btn" data-filter="offline">Offline Mode</button> <button class="filter-btn" data-filter="originals">Original Content</button> <button class="filter-btn" data-filter="free">Free Options</button>
+       </div>
+      </div>
+      <div class="services-grid" id="discover-grid"></div>
+     </div>
+    </div>
+   </div><!-- About Page -->
+   <div class="page" id="page-about">
+    <div class="about-content">
+     <div class="about-card">
+      <h2 class="about-title">About StreamFinder</h2>
+      <p class="about-text">StreamFinder is your ultimate guide to legal streaming services. We help you discover and compare the best platforms to watch your favorite movies and shows.</p>
+      <p class="about-text">All services listed on our platform are 100% legal and properly licensed. We believe in supporting creators and the entertainment industry through legitimate streaming options.</p>
+      <div class="about-features">
+       <div class="about-feature">
+        <div class="about-feature-icon">
+         ✅
+        </div>
+        <div class="about-feature-text">
+         100% Legal
+        </div>
+       </div>
+       <div class="about-feature">
+        <div class="about-feature-icon">
+         🔍
+        </div>
+        <div class="about-feature-text">
+         Easy Discovery
+        </div>
+       </div>
+       <div class="about-feature">
+        <div class="about-feature-icon">
+         ⚡
+        </div>
+        <div class="about-feature-text">
+         Fast Access
+        </div>
+       </div>
+       <div class="about-feature">
+        <div class="about-feature-icon">
+         🎯
+        </div>
+        <div class="about-feature-text">
+         Curated Selection
+        </div>
+       </div>
+      </div>
+     </div>
+     <div class="about-card">
+      <h3 class="about-title" style="font-size: 28px;">Why Legal Streaming?</h3>
+      <p class="about-text">Legal streaming services ensure that creators, actors, and everyone involved in making content get fairly compensated. By choosing legitimate platforms, you're supporting the entertainment industry and ensuring more great content gets made.</p>
+     </div>
+    </div>
+   </div><!-- Footer -->
+   <footer class="footer-section">
+    <p class="footer-text" id="footer-text">All streaming services listed are 100% legal and properly licensed. Support creators by using legitimate platforms.</p>
+    <div class="social-links"><span class="social-link">🎬</span> <span class="social-link">📺</span> <span class="social-link">🎭</span> <span class="social-link">🍿</span>
+    </div>
+   </footer>
+  </div>
+  <script>
+    const premiumServices = [
+      {
+        name: "Netflix",
+        logo: `<svg width="56" height="56" viewBox="0 0 100 100"><rect fill="#E50914" width="100" height="100" rx="15"/><path fill="#B20710" d="M35 20 L35 80 L40 80 L40 20 Z"/><path fill="#fff" d="M40 20 L60 80 L65 80 L45 20 Z"/><path fill="#E50914" d="M60 20 L60 80 L65 80 L65 20 Z"/></svg>`,
+        description: "The world's leading streaming service with award-winning originals and thousands of movies.",
+        url: "https://www.netflix.com",
+        badge: "Premium",
+        features: ["HD & 4K", "Originals", "Offline"],
+        price: "$6.99 - $19.99/mo",
+        has4K: true,
+        hasOffline: true,
+        hasAds: "Optional",
+        hasOriginals: true,
+        color: "#E50914"
+      },
+      {
+        name: "Disney+",
+        logo: `<svg width="56" height="56" viewBox="0 0 100 100"><defs><linearGradient id="disney" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#0c5db8"/><stop offset="100%" style="stop-color:#1e88e5"/></linearGradient></defs><rect fill="url(#disney)" width="100" height="100" rx="15"/><path fill="#fff" d="M30 35 Q30 25 40 25 L60 25 Q70 25 70 35 L70 50 L55 50 L55 65 Q55 70 50 70 Q45 70 45 65 L45 50 L30 50 Z"/><circle fill="#fff" cx="35" cy="60" r="8"/></svg>`,
+        description: "Home of Disney, Pixar, Marvel, Star Wars, and National Geographic content.",
+        url: "https://www.disneyplus.com",
+        badge: "Premium",
+        features: ["Family", "4K UHD", "Exclusive"],
+        price: "$7.99 - $13.99/mo",
+        has4K: true,
+        hasOffline: true,
+        hasAds: "Optional",
+        hasOriginals: true,
+        color: "#0c5db8"
+      },
+      {
+        name: "Prime Video",
+        logo: `<svg width="56" height="56" viewBox="0 0 100 100"><defs><linearGradient id="prime" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#00a8e1"/><stop offset="100%" style="stop-color:#0069b4"/></linearGradient></defs><rect fill="url(#prime)" width="100" height="100" rx="15"/><path fill="#fff" d="M25 40 L50 25 L75 40 L75 60 Q75 70 65 70 L35 70 Q25 70 25 60 Z"/><path fill="#ff9900" d="M35 55 Q35 50 40 50 L60 50 Q65 50 65 55 L60 65 L40 65 Z"/></svg>`,
+        description: "Amazon's streaming service with movies, shows, and Prime exclusives.",
+        url: "https://www.amazon.com/prime-video",
+        badge: "Premium",
+        features: ["Prime", "Originals", "Rent"],
+        price: "$8.99/mo",
+        has4K: true,
+        hasOffline: true,
+        hasAds: false,
+        hasOriginals: true,
+        color: "#00a8e1"
+      },
+      {
+        name: "Hulu",
+        logo: `<svg width="56" height="56" viewBox="0 0 100 100"><rect fill="#1ce783" width="100" height="100" rx="15"/><text x="50" y="70" font-family="Arial Black" font-size="45" font-weight="900" fill="#fff" text-anchor="middle">hulu</text></svg>`,
+        description: "Stream current TV episodes, classic series, and Hulu originals.",
+        url: "https://www.hulu.com",
+        badge: "Premium",
+        features: ["Live TV", "Next Day", "Originals"],
+        price: "$7.99 - $17.99/mo",
+        has4K: true,
+        hasOffline: false,
+        hasAds: "Optional",
+        hasOriginals: true,
+        color: "#1ce783"
+      },
+      {
+        name: "Apple TV+",
+        logo: `<svg width="56" height="56" viewBox="0 0 100 100"><rect fill="#000" width="100" height="100" rx="15"/><path fill="#fff" d="M50 25 Q55 25 55 30 Q55 32 53 34 Q58 36 58 42 Q58 48 52 48 L48 48 Q42 48 42 42 Q42 36 47 34 Q45 32 45 30 Q45 25 50 25 Z M40 52 L60 52 Q65 52 65 57 L65 70 Q65 75 60 75 L40 75 Q35 75 35 70 L35 57 Q35 52 40 52 Z"/></svg>`,
+        description: "Apple's premium streaming service featuring exclusive original content.",
+        url: "https://tv.apple.com",
+        badge: "Premium",
+        features: ["4K HDR", "Originals", "Ad-Free"],
+        price: "$9.99/mo",
+        has4K: true,
+        hasOffline: true,
+        hasAds: false,
+        hasOriginals: true,
+        color: "#000"
+      },
+      {
+        name: "HBO Max",
+        logo: `<svg width="56" height="56" viewBox="0 0 100 100"><defs><linearGradient id="hbo" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#7c3aed"/><stop offset="100%" style="stop-color:#a855f7"/></linearGradient></defs><rect fill="url(#hbo)" width="100" height="100" rx="15"/><circle fill="#fff" cx="50" cy="50" r="20"/><text x="50" y="58" font-family="Arial Black" font-size="18" font-weight="900" fill="#7c3aed" text-anchor="middle">MAX</text></svg>`,
+        description: "Premium entertainment with HBO originals, blockbusters, and exclusives.",
+        url: "https://www.max.com",
+        badge: "Premium",
+        features: ["HBO", "4K", "Premieres"],
+        price: "$9.99 - $19.99/mo",
+        has4K: true,
+        hasOffline: true,
+        hasAds: "Optional",
+        hasOriginals: true,
+        color: "#7c3aed"
+      },
+      {
+        name: "Paramount+",
+        logo: `<svg width="56" height="56" viewBox="0 0 100 100"><defs><linearGradient id="paramount" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#0064ff"/><stop offset="100%" style="stop-color:#0042a8"/></linearGradient></defs><rect fill="url(#paramount)" width="100" height="100" rx="15"/><path fill="#fff" d="M50 25 L65 45 L55 45 L50 38 L45 45 L35 45 Z M35 50 L50 75 L65 50 L57 50 L50 60 L43 50 Z"/></svg>`,
+        description: "Stream originals, live sports, breaking news, and a mountain of entertainment.",
+        url: "https://www.paramountplus.com",
+        badge: "Premium",
+        features: ["Live Sports", "CBS", "MTV"],
+        price: "$5.99 - $11.99/mo",
+        has4K: true,
+        hasOffline: true,
+        hasAds: "Optional",
+        hasOriginals: true,
+        color: "#0064ff"
+      },
+      {
+        name: "Peacock",
+        logo: `<svg width="56" height="56" viewBox="0 0 100 100"><defs><linearGradient id="peacock" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#000"/><stop offset="50%" style="stop-color:#7c3aed"/><stop offset="100%" style="stop-color:#ec4899"/></linearGradient></defs><rect fill="url(#peacock)" width="100" height="100" rx="15"/><ellipse fill="#fff" cx="50" cy="45" rx="15" ry="20"/><circle fill="#7c3aed" cx="50" cy="40" r="5"/><path fill="#ec4899" d="M35 50 Q35 40 45 40 L55 40 Q65 40 65 50 Q65 55 60 58 L50 70 L40 58 Q35 55 35 50 Z"/></svg>`,
+        description: "NBC Universal's streaming service with next-day access to new episodes.",
+        url: "https://www.peacocktv.com",
+        badge: "Premium",
+        features: ["NBC Shows", "WWE", "Live"],
+        price: "$5.99 - $11.99/mo",
+        has4K: true,
+        hasOffline: false,
+        hasAds: "Optional",
+        hasOriginals: true,
+        color: "#000"
+      }
+    ];
+
+    const freeServices = [
+      {
+        name: "Tubi",
+        logo: `<svg width="56" height="56" viewBox="0 0 100 100"><defs><linearGradient id="tubi" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#ff4b4b"/><stop offset="100%" style="stop-color:#e91e63"/></linearGradient></defs><rect fill="url(#tubi)" width="100" height="100" rx="15"/><circle fill="#fff" cx="35" cy="45" r="8"/><circle fill="#fff" cx="65" cy="45" r="8"/><path fill="#fff" d="M30 60 Q50 75 70 60" stroke="#fff" stroke-width="3" fill="none"/></svg>`,
+        description: "Massive library of free movies and TV shows, supported by ads.",
+        url: "https://tubitv.com",
+        badge: "Free",
+        features: ["50K+ Titles", "No Sign Up", "Popular"],
+        price: "Free",
+        has4K: false,
+        hasOffline: false,
+        hasAds: true,
+        hasOriginals: false,
+        color: "#ff4b4b"
+      },
+      {
+        name: "Pluto TV",
+        logo: `<svg width="56" height="56" viewBox="0 0 100 100"><defs><linearGradient id="pluto" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#fbbf24"/><stop offset="100%" style="stop-color:#f59e0b"/></linearGradient></defs><rect fill="url(#pluto)" width="100" height="100" rx="15"/><circle fill="#fff" cx="50" cy="50" r="22"/><circle fill="#fbbf24" cx="50" cy="50" r="15"/><circle fill="#fff" cx="45" cy="45" r="4"/></svg>`,
+        description: "Free streaming with 250+ live channels and thousands of on-demand titles.",
+        url: "https://pluto.tv",
+        badge: "Free",
+        features: ["Live TV", "Free", "Channels"],
+        price: "Free",
+        has4K: false,
+        hasOffline: false,
+        hasAds: true,
+        hasOriginals: false,
+        color: "#fbbf24"
+      },
+      {
+        name: "Crackle",
+        logo: `<svg width="56" height="56" viewBox="0 0 100 100"><rect fill="#1a1a1a" width="100" height="100" rx="15"/><path fill="#fbbf24" d="M45 25 L55 25 L40 50 L50 50 L35 75 L42 52 L32 52 Z" stroke="#fff" stroke-width="2"/></svg>`,
+        description: "Sony's free streaming service with movies and original programming.",
+        url: "https://www.crackle.com",
+        badge: "Free",
+        features: ["Sony", "Originals", "Ad-Based"],
+        price: "Free",
+        has4K: false,
+        hasOffline: false,
+        hasAds: true,
+        hasOriginals: true,
+        color: "#1a1a1a"
+      },
+      {
+        name: "Freevee",
+        logo: `<svg width="56" height="56" viewBox="0 0 100 100"><defs><linearGradient id="freevee" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#00a8e1"/><stop offset="100%" style="stop-color:#0069b4"/></linearGradient></defs><rect fill="url(#freevee)" width="100" height="100" rx="15"/><path fill="#fff" d="M30 40 L45 25 L45 55 Z M55 45 L70 30 L70 60 Z"/><text x="50" y="80" font-family="Arial" font-size="14" font-weight="700" fill="#fff" text-anchor="middle">FREE</text></svg>`,
+        description: "Amazon's free streaming service with premium movies and shows.",
+        url: "https://www.amazon.com/freevee",
+        badge: "Free",
+        features: ["Amazon", "Originals", "Free"],
+        price: "Free",
+        has4K: false,
+        hasOffline: false,
+        hasAds: true,
+        hasOriginals: true,
+        color: "#00a8e1"
+      },
+      {
+        name: "Roku Channel",
+        logo: `<svg width="56" height="56" viewBox="0 0 100 100"><rect fill="#6b21a8" width="100" height="100" rx="15"/><circle fill="#fff" cx="50" cy="45" r="18"/><circle fill="#6b21a8" cx="50" cy="45" r="10"/><rect fill="#fff" x="42" y="60" width="16" height="18" rx="3"/></svg>`,
+        description: "Free streaming with live TV, movies, and shows. No subscriptions needed.",
+        url: "https://therokuchannel.roku.com",
+        badge: "Free",
+        features: ["Live TV", "No Sign Up", "Popular"],
+        price: "Free",
+        has4K: false,
+        hasOffline: false,
+        hasAds: true,
+        hasOriginals: false,
+        color: "#6b21a8"
+      }
+    ];
+
+    const defaultConfig = {
+      background_color: "#0a0e27",
+      card_color: "#1a1f3a",
+      text_color: "#ffffff",
+      accent_color: "#6366f1",
+      badge_color: "#10b981",
+      main_title: "Find Your Perfect Stream",
+      subtitle: "Discover the best legal streaming platforms for movies, shows, and more",
+      nav_home: "Home",
+      nav_premium: "Premium",
+      nav_free: "Free",
+      nav_compare: "Compare",
+      nav_quiz: "Quiz",
+      nav_discover: "Discover",
+      nav_about: "About",
+      premium_label: "Premium Streaming Services",
+      free_label: "Free Streaming Services",
+      footer_text: "All streaming services listed are 100% legal and properly licensed. Support creators by using legitimate platforms.",
+      font_family: "Inter",
+      font_size: 16
+    };
+
+    let currentPage = 'home';
+    let clickCount = 0;
+    let konami = [];
+    const konamiCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight'];
+
+    function createServiceCard(service) {
+      const card = document.createElement('a');
+      card.className = 'service-card';
+      card.href = service.url;
+      card.target = '_blank';
+      card.rel = 'noopener noreferrer';
+      
+      const featuresHTML = service.features.map(feature => 
+        `<span class="feature-tag">${feature}</span>`
+      ).join('');
+
+      card.innerHTML = `
+        <div class="service-header">
+          <div class="service-logo">${service.logo}</div>
+          <span class="service-badge">${service.badge}</span>
+        </div>
+        <div class="service-content">
+          <h3 class="service-name">${service.name}</h3>
+          <p class="service-description">${service.description}</p>
+          <div class="service-features">${featuresHTML}</div>
+        </div>
+      `;
+
+      return card;
+    }
+
+    function createSurpriseElement(emoji, x, y) {
+      const el = document.createElement('div');
+      el.className = 'surprise-element';
+      el.textContent = emoji;
+      el.style.left = x + 'px';
+      el.style.top = y + 'px';
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 3000);
+    }
+
+    function createConfetti(x, y) {
+      const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#f7b731', '#5f27cd', '#00d2d3', '#ff9ff3'];
+      for (let i = 0; i < 20; i++) {
+        const confetti = document.createElement('div');
+        confetti.className = 'confetti';
+        confetti.style.left = (x + (Math.random() - 0.5) * 100) + 'px';
+        confetti.style.top = y + 'px';
+        confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+        confetti.style.animationDelay = (Math.random() * 0.5) + 's';
+        document.body.appendChild(confetti);
+        setTimeout(() => confetti.remove(), 3000);
+      }
+    }
+
+    function initQuiz() {
+      const questions = [
+        {
+          q: "What's your streaming budget?",
+          options: [
+            { text: "💰 I want free!", value: "free" },
+            { text: "💵 Under $10/month", value: "budget" },
+            { text: "💳 Premium is worth it!", value: "premium" }
+          ]
+        }
+      ];
+
+      let currentQ = 0;
+      let answers = {};
+
+      function showQuestion() {
+        const question = questions[currentQ];
+        document.getElementById('quiz-question').textContent = question.q;
+        const optionsContainer = document.getElementById('quiz-options');
+        optionsContainer.innerHTML = '';
+
+        question.options.forEach((option, idx) => {
+          const btn = document.createElement('div');
+          btn.className = 'quiz-option';
+          btn.textContent = option.text;
+          btn.style.animationDelay = (idx * 0.1) + 's';
+          btn.classList.add('animate-slide-left');
+          btn.onclick = () => {
+            answers.budget = option.value;
+            showResult();
+            createConfetti(window.innerWidth / 2, window.innerHeight / 2);
+          };
+          optionsContainer.appendChild(btn);
+        });
+      }
+
+      function showResult() {
+        document.getElementById('quiz-question-card').style.display = 'none';
+        document.getElementById('quiz-result').style.display = 'block';
+        document.getElementById('quiz-result').classList.add('animate-zoom');
+
+        const recContainer = document.getElementById('quiz-recommendation');
+        let recommended;
+
+        if (answers.budget === 'free') {
+          recommended = freeServices[Math.floor(Math.random() * freeServices.length)];
+        } else if (answers.budget === 'budget') {
+          recommended = premiumServices.filter(s => s.price.includes('$5.99') || s.price.includes('$6.99'))[0] || premiumServices[0];
+        } else {
+          recommended = premiumServices[Math.floor(Math.random() * premiumServices.length)];
+        }
+
+        recContainer.innerHTML = `
+          <div style="text-align: center; padding: 32px;">
+            <div style="margin-bottom: 24px;">${recommended.logo}</div>
+            <h4 style="font-size: 32px; font-weight: 900; margin-bottom: 16px;">${recommended.name}</h4>
+            <p style="font-size: 18px; opacity: 0.9; margin-bottom: 24px;">${recommended.description}</p>
+            <p style="font-size: 24px; font-weight: 700; margin-bottom: 32px;">${recommended.price}</p>
+            <a href="${recommended.url}" target="_blank" rel="noopener noreferrer" 
+               style="display: inline-block; padding: 16px 40px; border-radius: 50px; 
+                      font-weight: 700; text-decoration: none; transition: all 0.3s ease;"
+               onmouseover="this.style.transform='scale(1.05)'"
+               onmouseout="this.style.transform='scale(1)'">
+              Try ${recommended.name} →
+            </a>
+            <div style="margin-top: 32px;">
+              <button onclick="location.reload()" 
+                      style="padding: 12px 24px; border-radius: 20px; font-weight: 600; 
+                             cursor: pointer; border: 2px solid; background: transparent;">
+                Take Quiz Again
+              </button>
+            </div>
+          </div>
+        `;
+      }
+
+      showQuestion();
+    }
+
+    function initDiscover() {
+      const allServices = [...premiumServices, ...freeServices];
+      const discoverGrid = document.getElementById('discover-grid');
+      
+      function filterServices(filter) {
+        discoverGrid.innerHTML = '';
+        let filtered = allServices;
+
+        if (filter === '4k') filtered = allServices.filter(s => s.has4K);
+        else if (filter === 'offline') filtered = allServices.filter(s => s.hasOffline);
+        else if (filter === 'originals') filtered = allServices.filter(s => s.hasOriginals);
+        else if (filter === 'free') filtered = freeServices;
+
+        filtered.forEach((service, idx) => {
+          const card = createServiceCard(service);
+          card.style.animationDelay = (idx * 0.05) + 's';
+          card.classList.add(idx % 2 === 0 ? 'animate-slide-left' : 'animate-slide-right');
+          discoverGrid.appendChild(card);
+        });
+      }
+
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+          e.target.classList.add('active');
+          const filter = e.target.dataset.filter;
+          filterServices(filter);
+          createSurpriseElement('✨', e.clientX, e.clientY);
+        });
+      });
+
+      filterServices('all');
+    }
+
+    function renderServices() {
+      const premiumGrid = document.getElementById('premium-grid');
+      const freeGrid = document.getElementById('free-grid');
+      
+      premiumGrid.innerHTML = '';
+      freeGrid.innerHTML = '';
+
+      premiumServices.forEach(service => {
+        premiumGrid.appendChild(createServiceCard(service));
+      });
+
+      freeServices.forEach(service => {
+        freeGrid.appendChild(createServiceCard(service));
+      });
+    }
+
+    function renderComparisonTable() {
+      const tbody = document.getElementById('comparison-tbody');
+      tbody.innerHTML = '';
+
+      const allServices = [...premiumServices, ...freeServices];
+      
+      allServices.forEach(service => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td><strong>${service.logo} ${service.name}</strong></td>
+          <td>${service.price}</td>
+          <td><span class="comparison-icon">${service.has4K ? '✅' : '❌'}</span></td>
+          <td><span class="comparison-icon">${service.hasOffline ? '✅' : '❌'}</span></td>
+          <td><span class="comparison-icon">${service.hasAds === true ? '✅' : service.hasAds === 'Optional' ? '⚠️' : '❌'}</span></td>
+          <td><span class="comparison-icon">${service.hasOriginals ? '✅' : '❌'}</span></td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    function navigateToPage(pageName) {
+      document.querySelectorAll('.page').forEach(page => {
+        page.classList.remove('active');
+      });
+
+      document.querySelectorAll('.nav-link').forEach(link => {
+        link.classList.remove('active');
+      });
+
+      document.getElementById(`page-${pageName}`).classList.add('active');
+      document.querySelector(`[data-page="${pageName}"]`).classList.add('active');
+      
+      currentPage = pageName;
+      
+      const navLinks = document.getElementById('nav-links');
+      navLinks.classList.remove('active');
+
+      window.scrollTo(0, 0);
+
+      // Initialize page-specific features
+      if (pageName === 'quiz') {
+        setTimeout(() => initQuiz(), 100);
+      } else if (pageName === 'discover') {
+        setTimeout(() => initDiscover(), 100);
+      }
+    }
+
+    async function onConfigChange(config) {
+      const currentConfig = config || defaultConfig;
+      const customFont = currentConfig.font_family || defaultConfig.font_family;
+      const baseSize = currentConfig.font_size || defaultConfig.font_size;
+      const baseFontStack = 'Inter, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif';
+
+      const gradientBg = document.querySelector('.gradient-bg');
+      gradientBg.style.background = `linear-gradient(135deg, ${currentConfig.background_color} 0%, ${currentConfig.accent_color} 100%)`;
+      document.querySelector('.app-container').style.background = currentConfig.background_color;
+
+      document.getElementById('main-title').textContent = currentConfig.main_title || defaultConfig.main_title;
+      document.getElementById('subtitle').textContent = currentConfig.subtitle || defaultConfig.subtitle;
+      document.getElementById('premium-label').textContent = currentConfig.premium_label || defaultConfig.premium_label;
+      document.getElementById('free-label').textContent = currentConfig.free_label || defaultConfig.free_label;
+      document.getElementById('footer-text').textContent = currentConfig.footer_text || defaultConfig.footer_text;
+
+      document.getElementById('nav-home').textContent = currentConfig.nav_home || defaultConfig.nav_home;
+      document.getElementById('nav-premium').textContent = currentConfig.nav_premium || defaultConfig.nav_premium;
+      document.getElementById('nav-free').textContent = currentConfig.nav_free || defaultConfig.nav_free;
+      document.getElementById('nav-compare').textContent = currentConfig.nav_compare || defaultConfig.nav_compare;
+      document.getElementById('nav-quiz').textContent = currentConfig.nav_quiz || defaultConfig.nav_quiz;
+      document.getElementById('nav-discover').textContent = currentConfig.nav_discover || defaultConfig.nav_discover;
+      document.getElementById('nav-about').textContent = currentConfig.nav_about || defaultConfig.nav_about;
+
+      document.querySelector('.navbar').style.background = `${currentConfig.background_color}cc`;
+      document.querySelector('.nav-logo').style.color = currentConfig.text_color;
+      document.querySelector('.nav-logo').style.fontFamily = `${customFont}, ${baseFontStack}`;
+
+      document.querySelectorAll('.nav-link').forEach(link => {
+        link.style.color = currentConfig.text_color;
+        link.style.fontFamily = `${customFont}, ${baseFontStack}`;
+        link.style.fontSize = `${baseSize}px`;
+      });
+
+      document.querySelectorAll('.nav-link.active').forEach(link => {
+        link.style.background = `${currentConfig.accent_color}40`;
+      });
+
+      document.querySelector('.hero-badge').style.background = `${currentConfig.accent_color}33`;
+      document.querySelector('.hero-badge').style.color = currentConfig.text_color;
+      document.querySelector('.hero-subtitle').style.color = currentConfig.text_color;
+
+      document.querySelector('.hero-title').style.fontFamily = `${customFont}, ${baseFontStack}`;
+      document.querySelector('.hero-subtitle').style.fontFamily = `${customFont}, ${baseFontStack}`;
+      document.querySelector('.hero-title').style.fontSize = `${baseSize * 3.5}px`;
+      document.querySelector('.hero-subtitle').style.fontSize = `${baseSize * 1.375}px`;
+
+      const sectionHeaders = document.querySelectorAll('.section-header');
+      sectionHeaders.forEach(header => {
+        header.style.color = currentConfig.text_color;
+        header.style.fontFamily = `${customFont}, ${baseFontStack}`;
+        header.style.fontSize = `${baseSize * 2}px`;
+      });
+
+      const statCards = document.querySelectorAll('.stat-card');
+      statCards.forEach(card => {
+        card.style.background = `${currentConfig.card_color}80`;
+        const number = card.querySelector('.stat-number');
+        const label = card.querySelector('.stat-label');
+        if (number) {
+          number.style.color = currentConfig.accent_color;
+          number.style.fontFamily = `${customFont}, ${baseFontStack}`;
+          number.style.fontSize = `${baseSize * 3}px`;
+        }
+        if (label) {
+          label.style.color = currentConfig.text_color;
+          label.style.fontFamily = `${customFont}, ${baseFontStack}`;
+          label.style.fontSize = `${baseSize}px`;
+        }
+      });
+
+      const pageNavCards = document.querySelectorAll('.page-nav-card');
+      pageNavCards.forEach(card => {
+        card.style.background = `${currentConfig.card_color}cc`;
+        const title = card.querySelector('.page-nav-title');
+        const desc = card.querySelector('.page-nav-desc');
+        if (title) {
+          title.style.color = currentConfig.text_color;
+          title.style.fontFamily = `${customFont}, ${baseFontStack}`;
+          title.style.fontSize = `${baseSize * 1.5}px`;
+        }
+        if (desc) {
+          desc.style.color = currentConfig.text_color;
+          desc.style.fontFamily = `${customFont}, ${baseFontStack}`;
+          desc.style.fontSize = `${baseSize}px`;
+        }
+      });
+
+      const serviceCards = document.querySelectorAll('.service-card');
+      serviceCards.forEach(card => {
+        card.style.background = `${currentConfig.card_color}cc`;
+        const name = card.querySelector('.service-name');
+        const description = card.querySelector('.service-description');
+        const badge = card.querySelector('.service-badge');
+        const features = card.querySelectorAll('.feature-tag');
+        
+        if (name) {
+          name.style.color = currentConfig.text_color;
+          name.style.fontFamily = `${customFont}, ${baseFontStack}`;
+          name.style.fontSize = `${baseSize * 1.75}px`;
+        }
+        if (description) {
+          description.style.color = currentConfig.text_color;
+          description.style.fontFamily = `${customFont}, ${baseFontStack}`;
+          description.style.fontSize = `${baseSize}px`;
+        }
+        if (badge) {
+          badge.style.background = currentConfig.badge_color;
+          badge.style.color = currentConfig.background_color;
+          badge.style.fontFamily = `${customFont}, ${baseFontStack}`;
+          badge.style.fontSize = `${baseSize * 0.75}px`;
+        }
+        features.forEach(feature => {
+          feature.style.background = `${currentConfig.accent_color}30`;
+          feature.style.color = currentConfig.text_color;
+          feature.style.fontFamily = `${customFont}, ${baseFontStack}`;
+          feature.style.fontSize = `${baseSize * 0.8125}px`;
+        });
+      });
+
+      const comparisonTable = document.querySelector('.comparison-table');
+      if (comparisonTable) {
+        comparisonTable.style.color = currentConfig.text_color;
+        const theadCells = comparisonTable.querySelectorAll('thead th');
+        theadCells.forEach(cell => {
+          cell.style.color = currentConfig.text_color;
+          cell.style.borderColor = currentConfig.accent_color;
+          cell.style.fontFamily = `${customFont}, ${baseFontStack}`;
+          cell.style.fontSize = `${baseSize * 1.125}px`;
+        });
+        const tbodyRows = comparisonTable.querySelectorAll('tbody tr');
+        tbodyRows.forEach(row => {
+          row.style.background = `${currentConfig.card_color}cc`;
+          const cells = row.querySelectorAll('td');
+          cells.forEach(cell => {
+            cell.style.color = currentConfig.text_color;
+            cell.style.fontFamily = `${customFont}, ${baseFontStack}`;
+            cell.style.fontSize = `${baseSize}px`;
+          });
+        });
+      }
+
+      const aboutCards = document.querySelectorAll('.about-card');
+      aboutCards.forEach(card => {
+        card.style.background = `${currentConfig.card_color}cc`;
+      });
+
+      const aboutTitles = document.querySelectorAll('.about-title');
+      aboutTitles.forEach(title => {
+        title.style.color = currentConfig.text_color;
+        title.style.fontFamily = `${customFont}, ${baseFontStack}`;
+      });
+
+      const aboutTexts = document.querySelectorAll('.about-text');
+      aboutTexts.forEach(text => {
+        text.style.color = currentConfig.text_color;
+        text.style.fontFamily = `${customFont}, ${baseFontStack}`;
+        text.style.fontSize = `${baseSize * 1.125}px`;
+      });
+
+      const aboutFeatures = document.querySelectorAll('.about-feature');
+      aboutFeatures.forEach(feature => {
+        feature.style.background = `${currentConfig.accent_color}20`;
+        const text = feature.querySelector('.about-feature-text');
+        if (text) {
+          text.style.color = currentConfig.text_color;
+          text.style.fontFamily = `${customFont}, ${baseFontStack}`;
+          text.style.fontSize = `${baseSize}px`;
+        }
+      });
+
+      document.querySelector('.footer-text').style.color = currentConfig.text_color;
+      document.querySelector('.footer-text').style.fontFamily = `${customFont}, ${baseFontStack}`;
+      document.querySelector('.footer-text').style.fontSize = `${baseSize * 1.125}px`;
+    }
+
+    function mapToCapabilities(config) {
+      const currentConfig = config || defaultConfig;
+      return {
+        recolorables: [
+          {
+            get: () => currentConfig.background_color || defaultConfig.background_color,
+            set: (value) => {
+              currentConfig.background_color = value;
+              if (window.elementSdk) {
+                window.elementSdk.setConfig({ background_color: value });
+              }
+            }
+          },
+          {
+            get: () => currentConfig.card_color || defaultConfig.card_color,
+            set: (value) => {
+              currentConfig.card_color = value;
+              if (window.elementSdk) {
+                window.elementSdk.setConfig({ card_color: value });
+              }
+            }
+          },
+          {
+            get: () => currentConfig.text_color || defaultConfig.text_color,
+            set: (value) => {
+              currentConfig.text_color = value;
+              if (window.elementSdk) {
+                window.elementSdk.setConfig({ text_color: value });
+              }
+            }
+          },
+          {
+            get: () => currentConfig.accent_color || defaultConfig.accent_color,
+            set: (value) => {
+              currentConfig.accent_color = value;
+              if (window.elementSdk) {
+                window.elementSdk.setConfig({ accent_color: value });
+              }
+            }
+          },
+          {
+            get: () => currentConfig.badge_color || defaultConfig.badge_color,
+            set: (value) => {
+              currentConfig.badge_color = value;
+              if (window.elementSdk) {
+                window.elementSdk.setConfig({ badge_color: value });
+              }
+            }
+          }
+        ],
+        borderables: [],
+        fontEditable: {
+          get: () => currentConfig.font_family || defaultConfig.font_family,
+          set: (value) => {
+            currentConfig.font_family = value;
+            if (window.elementSdk) {
+              window.elementSdk.setConfig({ font_family: value });
+            }
+          }
+        },
+        fontSizeable: {
+          get: () => currentConfig.font_size || defaultConfig.font_size,
+          set: (value) => {
+            currentConfig.font_size = value;
+            if (window.elementSdk) {
+              window.elementSdk.setConfig({ font_size: value });
+            }
+          }
+        }
+      };
+    }
+
+    function mapToEditPanelValues(config) {
+      const currentConfig = config || defaultConfig;
+      return new Map([
+        ["main_title", currentConfig.main_title || defaultConfig.main_title],
+        ["subtitle", currentConfig.subtitle || defaultConfig.subtitle],
+        ["nav_home", currentConfig.nav_home || defaultConfig.nav_home],
+        ["nav_premium", currentConfig.nav_premium || defaultConfig.nav_premium],
+        ["nav_free", currentConfig.nav_free || defaultConfig.nav_free],
+        ["nav_compare", currentConfig.nav_compare || defaultConfig.nav_compare],
+        ["nav_quiz", currentConfig.nav_quiz || defaultConfig.nav_quiz],
+        ["nav_discover", currentConfig.nav_discover || defaultConfig.nav_discover],
+        ["nav_about", currentConfig.nav_about || defaultConfig.nav_about],
+        ["premium_label", currentConfig.premium_label || defaultConfig.premium_label],
+        ["free_label", currentConfig.free_label || defaultConfig.free_label],
+        ["footer_text", currentConfig.footer_text || defaultConfig.footer_text]
+      ]);
+    }
+
+    renderServices();
+    renderComparisonTable();
+
+    document.querySelectorAll('.nav-link').forEach(link => {
+      link.addEventListener('click', (e) => {
+        const page = e.target.dataset.page;
+        if (page) {
+          navigateToPage(page);
+          createSurpriseElement('🎬', e.clientX, e.clientY);
+        }
+      });
+    });
+
+    document.getElementById('logo').addEventListener('click', (e) => {
+      navigateToPage('home');
+      clickCount++;
+      if (clickCount === 5) {
+        createConfetti(e.clientX, e.clientY);
+        clickCount = 0;
+      }
+    });
+
+    document.querySelectorAll('.page-nav-card').forEach(card => {
+      card.addEventListener('click', (e) => {
+        const page = e.currentTarget.dataset.navigate;
+        if (page) {
+          navigateToPage(page);
+        }
+      });
+    });
+
+    document.getElementById('mobile-menu-btn').addEventListener('click', () => {
+      const navLinks = document.getElementById('nav-links');
+      navLinks.classList.toggle('active');
+    });
+
+    // Spotlight effect
+    const spotlight = document.createElement('div');
+    spotlight.className = 'spotlight';
+    spotlight.style.display = 'none';
+    document.body.appendChild(spotlight);
+
+    let spotlightActive = false;
+
+    document.addEventListener('mousemove', (e) => {
+      if (spotlightActive) {
+        spotlight.style.left = (e.clientX - 150) + 'px';
+        spotlight.style.top = (e.clientY - 150) + 'px';
+      }
+    });
+
+    // Konami code easter egg
+    document.addEventListener('keydown', (e) => {
+      konami.push(e.key);
+      konami = konami.slice(-8);
+      
+      if (JSON.stringify(konami) === JSON.stringify(konamiCode)) {
+        spotlightActive = !spotlightActive;
+        spotlight.style.display = spotlightActive ? 'block' : 'none';
+        createConfetti(window.innerWidth / 2, window.innerHeight / 2);
+        
+        const message = document.createElement('div');
+        message.style.cssText = 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 48px; font-weight: 900; z-index: 10000; animation: zoomIn 0.5s ease-out;';
+        message.textContent = spotlightActive ? '🎮 Spotlight Mode ON!' : '🎮 Spotlight Mode OFF!';
+        document.body.appendChild(message);
+        setTimeout(() => message.remove(), 2000);
+      }
+    });
+
+    // Random emoji burst on service card hover
+    document.addEventListener('mouseover', (e) => {
+      if (e.target.closest('.service-card')) {
+        if (Math.random() < 0.1) {
+          const emojis = ['⭐', '🎬', '🎭', '🎪', '🎨', '🎯', '🎊', '✨'];
+          createSurpriseElement(emojis[Math.floor(Math.random() * emojis.length)], e.clientX, e.clientY);
+        }
+      }
+    });
+
+    // Shake animation on stat card click
+    document.querySelectorAll('.stat-card').forEach(card => {
+      card.addEventListener('click', (e) => {
+        card.classList.add('shake');
+        createSurpriseElement('🎉', e.clientX, e.clientY);
+        setTimeout(() => card.classList.remove('shake'), 500);
+      });
+      card.style.cursor = 'pointer';
+    });
+
+    if (window.elementSdk) {
+      window.elementSdk.init({
+        defaultConfig,
+        onConfigChange,
+        mapToCapabilities,
+        mapToEditPanelValues
+      });
+    } else {
+      onConfigChange(defaultConfig);
+    }
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9a403286e01273a0',t:'MTc2NDA2Mzc2MC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
